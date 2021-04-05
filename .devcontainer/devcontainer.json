@@ -1,0 +1,14 @@
+{
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack"
+    ],
+    "settings": {
+        "cmake.buildEnvironment": {
+            "CMAKE_TOOLCHAIN_FILE": "/opt/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        }
+    }
+}
