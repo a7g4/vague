@@ -7,10 +7,10 @@
 #include "test_helpers.hpp"
 
 TEST_CASE("Truncation projection, raw Eigen matrix", "[arbitrary_function]" ) {
-    using From = vague::state_spaces::CartesianPosYaw2D;
     using To = vague::state_spaces::CartesianPos2D;
+    using From = vague::state_spaces::CartesianPosYaw2D;
 
-    vague::ArbitraryFunction f(From(), To(),
+    vague::ArbitraryFunction f(To(), From(),
                                     [](const Eigen::Vector3d i){ return Eigen::Matrix<double, 2, 1>(i.topRows(2));});
     
     Eigen::Vector3d input(1,2,3);
@@ -18,10 +18,10 @@ TEST_CASE("Truncation projection, raw Eigen matrix", "[arbitrary_function]" ) {
 }
 
 TEST_CASE("Truncation projection, Mean", "[arbitrary_function]" ) {
-    using From = vague::state_spaces::CartesianPosYaw2D;
     using To = vague::state_spaces::CartesianPos2D;
+    using From = vague::state_spaces::CartesianPosYaw2D;
 
-    vague::ArbitraryFunction f(From(), To(),
+    vague::ArbitraryFunction f(To(), From(),
                                     [](const Eigen::Vector3d i){ return Eigen::Matrix<double, 2, 1>(i.topRows(2));});
     
     vague::Mean<From, double> mean({1,2,3});
@@ -41,10 +41,10 @@ TEST_CASE("Truncation projection, Mean", "[arbitrary_function]" ) {
 // }
 
 TEST_CASE("Truncation projection, WeightedSamples", "[arbitrary_function]" ) {
-    using From = vague::state_spaces::CartesianPosYaw2D;
     using To = vague::state_spaces::CartesianPos2D;
+    using From = vague::state_spaces::CartesianPosYaw2D;
 
-    vague::ArbitraryFunction f(From(), To(),
+    vague::ArbitraryFunction f(To(), From(),
                                     [](const Eigen::Vector3d i){ return Eigen::Matrix<double, 2, 1>(i.topRows(2));});
     
     vague::WeightedSamples<From, double, 3> sps(Eigen::Matrix3d({{1,2,3},{3,3,3},{0,4,8}}), {0.3, 0.3, 0.3});

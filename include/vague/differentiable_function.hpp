@@ -5,11 +5,11 @@
 
 namespace vague {
 
-template <typename FromT, typename ToT, typename FunctionT, typename JacobianT>
+template <typename ToT, typename FromT, typename FunctionT, typename JacobianT>
 struct DifferentiableFunction {
     
-    using From = FromT;
     using To = ToT;
+    using From = FromT;
     using Function = FunctionT;
     using Jacobian = JacobianT;
 
@@ -39,8 +39,8 @@ struct DifferentiableFunction {
 
     // Constructors that use the state spaces as "tags" for tagged dispatch
     // TODO: Can these be removed with some clever CTAD?
-    DifferentiableFunction(const From&, const To&, const Function& f, const Jacobian& j) : F(f), J(j) { }
-    DifferentiableFunction(const From&, const To&, Function&& f, Jacobian&& j) : F(std::move(f)), J(std::move(j)) { }
+    DifferentiableFunction(const To&, const From&, const Function& f, const Jacobian& j) : F(f), J(j) { }
+    DifferentiableFunction(const To&, const From&, Function&& f, Jacobian&& j) : F(std::move(f)), J(std::move(j)) { }
 
     template <typename ... AugmentedState>
     Output operator()(const Input& input, const AugmentedState&... augmented_state) const {

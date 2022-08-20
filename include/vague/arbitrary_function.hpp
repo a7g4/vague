@@ -7,11 +7,11 @@
 
 namespace vague {
 
-template <typename FromT, typename ToT, typename FunctionT>
+template <typename ToT, typename FromT, typename FunctionT>
 struct ArbitraryFunction {
 
-    using From = FromT;
     using To = ToT;
+    using From = FromT;
     using Function = FunctionT;
 
     constexpr static size_t DIM_RANGE = To::N;
@@ -38,8 +38,8 @@ struct ArbitraryFunction {
 
     // Constructors that use the state spaces as "tags" for tagged dispatch
     // TODO: Can these be removed with some clever CTAD?
-    ArbitraryFunction(const From&, const To&, const Function& f) : F(f) { }
-    ArbitraryFunction(const From&, const To&, Function&& f) : F(std::move(f)) { }
+    ArbitraryFunction(const To&, const From&, const Function& f) : F(f) { }
+    ArbitraryFunction(const To&, const From&, Function&& f) : F(std::move(f)) { }
 
     template <typename ... AugmentedState>
     Output operator()(const Input& from, const AugmentedState&... augmented_state) const {

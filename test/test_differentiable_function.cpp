@@ -7,10 +7,10 @@
 #include "test_helpers.hpp"
 
 TEST_CASE("Truncation projection, raw Eigen matrix", "[differentiable_function]" ) {
-    using From = vague::state_spaces::CartesianPosYaw2D;
     using To = vague::state_spaces::CartesianPos2D;
+    using From = vague::state_spaces::CartesianPosYaw2D;
 
-    vague::DifferentiableFunction f(From(), To(),
+    vague::DifferentiableFunction f(To(), From(),
                                     [](const Eigen::Vector3d i){ return Eigen::Matrix<double, 2, 1>(i.topRows(2));},
                                     [](const Eigen::Vector3d){ return Eigen::Matrix<double, 2, 3>({{1, 0, 0},{0, 1, 0}});});
     
@@ -19,10 +19,10 @@ TEST_CASE("Truncation projection, raw Eigen matrix", "[differentiable_function]"
 }
 
 TEST_CASE("Truncation projection, Mean", "[differentiable_function]" ) {
-    using From = vague::state_spaces::CartesianPosYaw2D;
     using To = vague::state_spaces::CartesianPos2D;
+    using From = vague::state_spaces::CartesianPosYaw2D;
 
-    vague::DifferentiableFunction f(From(), To(),
+    vague::DifferentiableFunction f(To(), From(),
                                     [](const Eigen::Vector3d i){ return Eigen::Matrix<double, 2, 1>(i.topRows(2));},
                                     [](const Eigen::Vector3d){ return Eigen::Matrix<double, 2, 3>({{1, 0, 0},{0, 1, 0}});});
     
@@ -31,10 +31,10 @@ TEST_CASE("Truncation projection, Mean", "[differentiable_function]" ) {
 }
 
 TEST_CASE("Truncation projection, MeanAndCovariance", "[differentiable_function]" ) {
-    using From = vague::state_spaces::CartesianPosYaw2D;
     using To = vague::state_spaces::CartesianPos2D;
+    using From = vague::state_spaces::CartesianPosYaw2D;
 
-    vague::DifferentiableFunction f(From(), To(),
+    vague::DifferentiableFunction f(To(), From(),
                                     [](const Eigen::Vector3d i){ return Eigen::Matrix<double, 2, 1>(i.topRows(2));},
                                     [](const Eigen::Vector3d){ return Eigen::Matrix<double, 2, 3>({{1, 0, 0},{0, 1, 0}});});
     
@@ -44,10 +44,10 @@ TEST_CASE("Truncation projection, MeanAndCovariance", "[differentiable_function]
 }
 
 TEST_CASE("Truncation projection, WeightedSamples", "[differentiable_function]" ) {
-    using From = vague::state_spaces::CartesianPosYaw2D;
     using To = vague::state_spaces::CartesianPos2D;
+    using From = vague::state_spaces::CartesianPosYaw2D;
 
-    vague::DifferentiableFunction f(From(), To(),
+    vague::DifferentiableFunction f(To(), From(),
                                     [](const Eigen::Vector3d i){ return Eigen::Matrix<double, 2, 1>(i.topRows(2));},
                                     [](const Eigen::Vector3d){ return Eigen::Matrix<double, 2, 3>({{1, 0, 0},{0, 1, 0}});});
     

@@ -27,13 +27,13 @@ TEST_CASE( "Benchmark different function types", "[benchmark]" ) {
 
     std::function<Output(const Input&)> fn = [](const Input& i) -> Output { return Output {i[0], i[0] * i[0]}; };
 
-    vague::ArbitraryFunction<From, To, std::function<Output(const Input&)>> af_function(fn);
+    vague::ArbitraryFunction<To, From, std::function<Output(const Input&)>> af_function(fn);
 
-    auto af_function_auto = vague::ArbitraryFunction(From(), To(), fn);
+    auto af_function_auto = vague::ArbitraryFunction(To(), From(), fn);
 
     auto af_lambda = vague::ArbitraryFunction(
-        From(),
         To(),
+        From(),
         [](const Input& i) -> Output { return Output {i[0], i[0] * i[0]}; }
     );
 

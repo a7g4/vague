@@ -5,11 +5,11 @@
 
 namespace vague {
 
-template <typename FromT, typename ToT, typename ScalarT>
+template <typename ToT, typename FromT, typename ScalarT>
 struct LinearFunction {
     
-    using From = FromT;
     using To = ToT;
+    using From = FromT;
     using Scalar = ScalarT;
     constexpr static size_t DIM_RANGE = To::N;
     constexpr static size_t DIM_DOMAIN = From::N;
@@ -52,12 +52,5 @@ struct LinearFunction {
 
     Matrix F;
 };
-
-// User-defined deduction guide
-// This was when the template paramaters looked like:
-//      template <typename Scalar, size_t DIM_RANGE, size_t DIM_DOMAIN>
-// template <typename F>
-// LinearFunction(F) -> LinearFunction<typename F::Scalar, size_t(F::RowsAtCompileTime), size_t(F::ColsAtCompileTime)>;
-
 
 }

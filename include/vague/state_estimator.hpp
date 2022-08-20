@@ -96,8 +96,8 @@ public:
 
 template <typename TimePoint, typename Estimate, typename Dynamics>
 StateEstimator(TimePoint, Estimate, Dynamics) ->
-    StateEstimator<TimePoint,
-                   typename Estimate::StateSpace,
+    StateEstimator<typename Estimate::StateSpace,
                    Dynamics,
-                   typename Estimate::Scalar>;
+                   typename Estimate::Scalar,
+                   TimePoint>;
 }

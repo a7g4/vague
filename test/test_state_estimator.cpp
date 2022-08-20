@@ -18,7 +18,7 @@ TEST_CASE("Simple test, arbitrary dynamics, arbitrary observation", "[state_esti
             newState[StateSpace::Y] += dt * state[StateSpace::V_Y];
             return newState;
     });
-    vague::ArbitraryFunction simple_projection(StateSpace(), vague::state_spaces::CartesianPos2D(), [](const Eigen::Matrix<double, 4, 1> state) {
+    vague::ArbitraryFunction simple_projection(vague::state_spaces::CartesianPos2D(), StateSpace(), [](const Eigen::Matrix<double, 4, 1> state) {
             Eigen::Matrix<double, 2, 1> projection = state.topRows(2);
             return projection;
     });
@@ -52,7 +52,7 @@ TEST_CASE("Simple test, arbitrary dynamics, linear observations", "[state_estima
             newState[StateSpace::Y] += dt * state[StateSpace::V_Y];
             return newState;
     });
-    vague::LinearFunction<vague::state_spaces::CartesianPosVel2D, vague::state_spaces::CartesianPos2D, double> simple_projection(
+    vague::LinearFunction<vague::state_spaces::CartesianPos2D, vague::state_spaces::CartesianPosVel2D, double> simple_projection(
             Eigen::Matrix<double, 2, 4> {{1, 0, 0, 0}, {0, 1, 0, 0}}
     );
     auto initial_time = std::chrono::system_clock::time_point();

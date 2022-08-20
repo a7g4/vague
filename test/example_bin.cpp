@@ -19,14 +19,14 @@ int main() {
     using Input = Eigen::Matrix<double, 1, 1>;
     using Output = Eigen::Matrix<double, 2, 1>;
 
-    vague::LinearFunction<From, To, double> f(Eigen::Matrix<double, 2, 1> {{1}, {2}});
+    vague::LinearFunction<To, From, double> f(Eigen::Matrix<double, 2, 1> {{1}, {2}});
 
-    vague::DifferentiableFunction<From, To, std::function<Output(const Input&)>, std::function<Output(const Input&)>> df(
+    vague::DifferentiableFunction<To, From, std::function<Output(const Input&)>, std::function<Output(const Input&)>> df(
         [](const Input& i) -> Output { return Output {i[0], i[0] * i[0]}; },
         [](const Input& i) -> Output { return Output {1, 2 * i[0] }; }
     );
 
-    vague::ArbitraryFunction<From, To, std::function<Output(const Input&)>> af(
+    vague::ArbitraryFunction<To, From, std::function<Output(const Input&)>> af(
         [](const Input& i) -> Output { return Output {i[0], i[0] * i[0]}; }
     );
 
