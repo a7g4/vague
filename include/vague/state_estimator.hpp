@@ -10,36 +10,33 @@
 namespace vague {
     
 template <typename StateSpaceT, typename ObservationSpaceT, typename ScalarT>
-struct PredictedObservation {
+struct PredictedObservation : MeanAndCovariance<ObservationSpaceT, ScalarT> {
     using StateSpace = StateSpaceT;
     using ObservationSpace = ObservationSpaceT;
     using Scalar = ScalarT;
 
-    MeanAndCovariance<ObservationSpace, Scalar> observation;
-    
     // TODO: Make this optional? So we don't need to calculate it unless its actually used for an update
+    //       (eg. predicted observation might just be used to perform association)
     //       Will probably need to be to a variant so that the original state can be copied in?
     Eigen::Matrix<Scalar, StateSpace::N, ObservationSpace::N> cross_covariance;
 };
 
-template <typename StateSpaceT, typename DynamicsT, typename ScalarT, typename TimePointT>
+template <typename StateSpaceT, typename ScalarT, typename TimePointT>
 class StateEstimator {
 public:
     using StateSpace = StateSpaceT;
-    using Dynamics = DynamicsT;
     using Scalar = ScalarT;
     using TimePoint = TimePointT;
 
     StateEstimator(const TimePoint& initial_time,
-                   const MeanAndCovariance<StateSpace, Scalar>& initial_estimate,
-                   Dynamics&& dynamics) : time(initial_time),
-                                          estimate(initial_estimate),
-                                          dynamics(std::move(dynamics)),
-                                          process_noise([initial_estimate] (Scalar dt) { return dt * initial_estimate.covariance;}) {
-        
+                   const MeanAndCovariance<StateSpace, Scalar>& initial_estimate) noexcept
+                   : time(initial_time),
+                     estimate(initial_estimate),
+                     process_noise([initial_estimate] (Scalar dt) { return dt * initial_estimate.covariance;}) {
     }
 
-    void predict(TimePoint t) {
+    template <typename Dynamics>
+    void predict(const Dynamics& dynamics, TimePoint t) {
         const auto duration = (t-time);
         
         if (duration.count() == 0) { return; }
@@ -50,7 +47,7 @@ public:
 
         if constexpr (vague::utility::FunctionTypeCallableWith<decltype(estimate), decltype(dt)>::value) {
             // Path for linear & differentiable dynamics
-            estimate = dynamics(estimate, dt).statistics();
+            estimate = dynamics(estimate, dt);
         } else {
             // Need to sample sigma points for non-linear & non-differentiable dynamics
             estimate = dynamics(sample(estimate, unscented_transform::CubatureSigmaPoints()), dt).statistics();
@@ -59,14 +56,15 @@ public:
     }
     
     template <typename Observer, typename ... AugmentedState>
-    PredictedObservation<StateSpace, typename Observer::To, Scalar> predicted_observation(const Observer& observer, const AugmentedState&... augmented_state) const {
+    PredictedObservation<StateSpace, typename Observer::To, Scalar> predict_observation(const Observer& observer, const AugmentedState&... augmented_state) const noexcept {
         if constexpr (vague::utility::FunctionTypeCallableWith<decltype(estimate), AugmentedState...>::value) {
-            throw std::runtime_error("Not yet implemented");
+            // Path for linear & differentiable dynamics
             return {
                 observer(estimate, augmented_state...),
-                estimate.covariance * observer.jacobian(estimate, augmented_state...)
+                estimate.covariance * observer.jacobian(estimate, augmented_state...).transpose()
             };
         } else {
+            // Need to sample sigma points for non-linear & non-differentiable dynamics
             const auto sigma_points = sample(estimate, unscented_transform::CubatureSigmaPoints());
             const auto& [state_mean, state_centered_samples] = sigma_points.mean_centered_samples();
 
@@ -80,24 +78,25 @@ public:
     }
     
     template <typename ObservationSpace>
-    void assimilate(const PredictedObservation<StateSpace, ObservationSpace, Scalar>& predicted_observation, const MeanAndCovariance<ObservationSpace, Scalar>& observation) {
-        const Eigen::Matrix<Scalar, ObservationSpace::N, ObservationSpace::N> observation_covariance_sum = predicted_observation.observation.covariance + observation.covariance;
-        const auto K = predicted_observation.cross_covariance * observation_covariance_sum.inverse();
-        estimate.mean += K * (observation.mean - predicted_observation.observation.mean);
+    void assimilate(const PredictedObservation<StateSpace, ObservationSpace, Scalar>& predicted_observation,
+                    const MeanAndCovariance<ObservationSpace, Scalar>& observation) noexcept {
+        using ObservationCovariance = Eigen::Matrix<Scalar, ObservationSpace::N, ObservationSpace::N>;
+        const ObservationCovariance observation_covariance_sum = predicted_observation.covariance + observation.covariance;
+        Eigen::PartialPivLU<ObservationCovariance> lu_solver(observation_covariance_sum);
+        const Eigen::Matrix<Scalar, StateSpace::N, ObservationSpace::N> K =
+                // Below line is equivalent to: predicted_observation.cross_covariance * observation_covariance_sum.inverse();
+                predicted_observation.cross_covariance * lu_solver.inverse();
+        estimate.mean += K * (observation.mean - predicted_observation.mean);
         estimate.covariance -= K * observation_covariance_sum * K.transpose();
     }
 
     TimePoint time;
     MeanAndCovariance<StateSpace, Scalar> estimate;
-    Dynamics dynamics;
     // TODO: This feels clunky, do something nicer for process noise
     std::function<Eigen::Matrix<Scalar, StateSpace::N, StateSpace::N>(Scalar)> process_noise;
 };
 
-template <typename TimePoint, typename Estimate, typename Dynamics>
-StateEstimator(TimePoint, Estimate, Dynamics) ->
-    StateEstimator<typename Estimate::StateSpace,
-                   Dynamics,
-                   typename Estimate::Scalar,
-                   TimePoint>;
+template <typename TimePoint, typename Estimate>
+StateEstimator(TimePoint, Estimate) -> StateEstimator<typename Estimate::StateSpace, typename Estimate::Scalar, TimePoint>;
+
 }

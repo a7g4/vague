@@ -18,7 +18,7 @@ struct To {
     constexpr static std::array<size_t, 0> Angles {};
 };
 
-TEST_CASE( "Flux capacitor charged", "[flux_capacitor]" ) {
+TEST_CASE( "Test dumping ground", "[sample]" ) {
 
     using Input = Eigen::Matrix<double, 1, 1>;
     using Output = Eigen::Matrix<double, 2, 1>;

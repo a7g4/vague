@@ -23,12 +23,12 @@ TEST_CASE("Simple test, arbitrary dynamics, arbitrary observation", "[state_esti
             return projection;
     });
     auto initial_time = std::chrono::system_clock::time_point();
-    vague::StateEstimator estimator(initial_time, initialEstimate, std::move(dynamics));
+    vague::StateEstimator estimator(initial_time, initialEstimate);
     
     for (size_t i = 0; i < 10; i++) {
         const auto time = initial_time + std::chrono::seconds(1 * i);
-        estimator.predict(time + std::chrono::seconds(1));
-        const auto& predicted_obs = estimator.predicted_observation(simple_projection);
+        estimator.predict(dynamics, time + std::chrono::seconds(1));
+        const auto& predicted_obs = estimator.predict_observation(simple_projection);
         
         vague::MeanAndCovariance<vague::state_spaces::CartesianPos2D, double> observation(
             Eigen::Vector2d(i, i * 5.0),
@@ -56,12 +56,12 @@ TEST_CASE("Simple test, arbitrary dynamics, linear observations", "[state_estima
             Eigen::Matrix<double, 2, 4> {{1, 0, 0, 0}, {0, 1, 0, 0}}
     );
     auto initial_time = std::chrono::system_clock::time_point();
-    vague::StateEstimator estimator(initial_time, initialEstimate, std::move(dynamics));
+    vague::StateEstimator estimator(initial_time, initialEstimate);
     
     for (size_t i = 0; i < 10; i++) {
         const auto time = initial_time + std::chrono::seconds(1 * i);
-        estimator.predict(time + std::chrono::seconds(1));
-        const auto& predicted_obs = estimator.predicted_observation(simple_projection);
+        estimator.predict(dynamics, time + std::chrono::seconds(1));
+        const auto& predicted_obs = estimator.predict_observation(simple_projection);
         
         vague::MeanAndCovariance<vague::state_spaces::CartesianPos2D, double> observation(
             Eigen::Vector2d(i, i * 5.0),

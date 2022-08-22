@@ -9,7 +9,7 @@ struct Mean {
     using StateSpace = StateSpaceT;
     using Scalar = ScalarT;
     using Vector = Eigen::Matrix<Scalar, StateSpace::N, 1>;
-    Mean(const Vector& mean_) : mean(mean_) { }
+    Mean(const Vector& mean_) noexcept : mean(mean_) { }
     Vector mean;
 };
 
@@ -19,7 +19,7 @@ struct MeanAndCovariance : Mean<StateSpaceT, ScalarT> {
     using Scalar = ScalarT;
     using Vector = Eigen::Matrix<Scalar, StateSpace::N, 1>;
     using Matrix = Eigen::Matrix<Scalar, StateSpace::N, StateSpace::N>;
-    MeanAndCovariance(const Vector& mean, const Matrix& covariance_) : Mean<StateSpace, Scalar>(mean), covariance(covariance_) { }
+    MeanAndCovariance(const Vector& mean, const Matrix& covariance_) noexcept : Mean<StateSpace, Scalar>(mean), covariance(covariance_) { }
     Matrix covariance;
 };
 
@@ -35,16 +35,16 @@ struct WeightedSamples {
     using WeightsVector = Eigen::Matrix<Scalar, N_Samples, 1>;
     using SamplesMatrix = Eigen::Matrix<Scalar, StateSpace::N, N_Samples>;
     
-    WeightedSamples(const SamplesMatrix& samples, const WeightsVector& weights) : samples(samples), weights(weights) { }
-    WeightedSamples(SamplesMatrix&& samples) : samples(std::move(samples)), weights(std::move(weights)) { }
+    WeightedSamples(const SamplesMatrix& samples, const WeightsVector& weights) noexcept : samples(samples), weights(weights) { }
+    WeightedSamples(SamplesMatrix&& samples) noexcept : samples(std::move(samples)), weights(std::move(weights)) { }
     
-    WeightedSamples(const SamplesMatrix& samples, UniformWeightsTag) : samples(samples), weights(WeightsVector::Constant(1./N_Samples)) { }
-    WeightedSamples(SamplesMatrix&& samples, UniformWeightsTag) : samples(std::move(samples)), weights(WeightsVector::Constant(1./N_Samples)) { }
+    WeightedSamples(const SamplesMatrix& samples, UniformWeightsTag) noexcept : samples(samples), weights(WeightsVector::Constant(1./N_Samples)) { }
+    WeightedSamples(SamplesMatrix&& samples, UniformWeightsTag) noexcept : samples(std::move(samples)), weights(WeightsVector::Constant(1./N_Samples)) { }
     
-    WeightedSamples(const WeightedSamples& copy) = default;
-    WeightedSamples(WeightedSamples&& move) = default;
+    WeightedSamples(const WeightedSamples& copy) noexcept = default;
+    WeightedSamples(WeightedSamples&& move) noexcept = default;
 
-    const auto operator[](const size_t& index) const {
+    const auto operator[](const size_t& index) const noexcept {
         return samples.col(index);
     }
     
@@ -52,7 +52,7 @@ struct WeightedSamples {
     using AngleExpandedSamples = Eigen::Matrix<Scalar, ANGLE_EXPANDED_SIZE, N_Samples>;
     using AngleExpandedVector = Eigen::Matrix<Scalar, ANGLE_EXPANDED_SIZE, 1>;
     using AngleExpandedMatrix = Eigen::Matrix<Scalar, ANGLE_EXPANDED_SIZE, ANGLE_EXPANDED_SIZE>;
-    AngleExpandedSamples expand_angles() const {
+    AngleExpandedSamples expand_angles() const noexcept {
         if constexpr (StateSpace::Angles.size() == 0) {
             return samples;
         }
@@ -78,7 +78,7 @@ struct WeightedSamples {
         return expanded_samples;
     }
 
-    MeanAndCovariance<StateSpace, Scalar> statistics() const {
+    MeanAndCovariance<StateSpace, Scalar> statistics() const noexcept {
         const auto& [mean, centered] = mean_centered_samples();
         Matrix covariance = centered * weights.asDiagonal() * centered.transpose();
         return { mean, covariance };
@@ -88,7 +88,7 @@ struct WeightedSamples {
         Vector mean;
         Eigen::Matrix<Scalar, StateSpace::N, N_Samples> samples;
     };
-    MeanCenteredSamples mean_centered_samples() const {
+    MeanCenteredSamples mean_centered_samples() const noexcept {
         if constexpr (StateSpace::Angles.size() == 0) {
             Vector mean = samples * weights;
             SamplesMatrix centered = samples.colwise() - mean;
