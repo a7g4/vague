@@ -1,34 +1,39 @@
 #pragma once
 
-#include <Eigen/Core>
+#include "Eigen/Core"
+#include "vague/estimate.hpp"
 #include "vague/utility.hpp"
+
 #include <utility>
 
 namespace vague {
 
 template <typename ToT, typename FromT, typename ScalarT>
 struct LinearFunction {
-    
+
     using To = ToT;
     using From = FromT;
     using Scalar = ScalarT;
-    constexpr static size_t DIM_RANGE = To::N;
-    constexpr static size_t DIM_DOMAIN = From::N;
-    using Matrix = Eigen::Matrix<Scalar, DIM_RANGE, DIM_DOMAIN>;
-    using Input = Eigen::Matrix<Scalar, DIM_DOMAIN, 1>;
-    using Output = Eigen::Matrix<Scalar, DIM_RANGE, 1>;
-    using JacobianOutput = Eigen::Matrix<Scalar, DIM_RANGE, DIM_DOMAIN>;
+    constexpr static size_t DimRange = To::N;
+    constexpr static size_t DimDomain = From::N;
+    using Matrix = Eigen::Matrix<Scalar, DimRange, DimDomain>;
+    using Input = Eigen::Matrix<Scalar, DimDomain, 1>;
+    using Output = Eigen::Matrix<Scalar, DimRange, 1>;
+    using JacobianOutput = Eigen::Matrix<Scalar, DimRange, DimDomain>;
 
     LinearFunction(const Matrix& f) noexcept : F(f) { }
     LinearFunction(Matrix&& f) noexcept : F(std::move(f)) { }
 
-    Output operator()(const Input& input) const noexcept {
-        return F * input;
-    }
+    LinearFunction(const LinearFunction& copy) noexcept = default;
+    LinearFunction(LinearFunction&& move) noexcept = default;
+    ~LinearFunction() noexcept = default;
 
-    JacobianOutput jacobian(const Input& input) const noexcept {
-        return F;
-    }
+    LinearFunction& operator=(const LinearFunction& copy) noexcept = default;
+    LinearFunction& operator=(LinearFunction&& move) noexcept = default;
+
+    Output operator()(const Input& input) const noexcept { return F * input; }
+
+    JacobianOutput jacobian(const Input& /*unused*/) const noexcept { return F; }
 
     Mean<To, Scalar> operator()(const Mean<From, Scalar>& input) const noexcept {
         return Mean<To, Scalar>(F * input.mean);
@@ -46,4 +51,4 @@ struct LinearFunction {
     Matrix F;
 };
 
-}
+} // namespace vague

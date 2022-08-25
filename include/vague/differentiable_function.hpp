@@ -1,26 +1,28 @@
 #pragma once
 
-#include <Eigen/Core>
+#include "Eigen/Core"
+#include "vague/estimate.hpp"
 #include "vague/utility.hpp"
+
 #include <utility>
 
 namespace vague {
 
 template <typename ToT, typename FromT, typename FunctionT, typename JacobianT>
 struct DifferentiableFunction {
-    
+
     using To = ToT;
     using From = FromT;
     using Function = FunctionT;
     using Jacobian = JacobianT;
 
-    constexpr static size_t DIM_RANGE = To::N;
-    constexpr static size_t DIM_DOMAIN = From::N;
+    constexpr static size_t DimRange = To::N;
+    constexpr static size_t DimDomain = From::N;
 
     using Scalar = typename utility::FunctionType<Function>::Output::Scalar;
-    using Input = Eigen::Matrix<Scalar, DIM_DOMAIN, 1>;
-    using Output = Eigen::Matrix<Scalar, DIM_RANGE, 1>;
-    using JacobianOutput = Eigen::Matrix<Scalar, DIM_RANGE, DIM_DOMAIN>;
+    using Input = Eigen::Matrix<Scalar, DimDomain, 1>;
+    using Output = Eigen::Matrix<Scalar, DimRange, 1>;
+    using JacobianOutput = Eigen::Matrix<Scalar, DimRange, DimDomain>;
 
     static_assert(std::is_same<Input, typename utility::FunctionType<Function>::template Input<0>>::value,
                   "First input to the function must be an Eigen vector representing the 'From' space");
@@ -42,33 +44,48 @@ struct DifferentiableFunction {
 
     // Constructors that use the state spaces as "tags" for tagged dispatch
     // TODO: Can these be removed with some clever CTAD?
-    DifferentiableFunction(const To&, const From&, const Function& f, const Jacobian& j) noexcept : F(f), J(j) { }
-    DifferentiableFunction(const To&, const From&, Function&& f, Jacobian&& j) noexcept : F(std::move(f)), J(std::move(j)) { }
+    DifferentiableFunction(const To& /*unused*/, const From& /*unused*/, const Function& f, const Jacobian& j) noexcept :
+        F(f),
+        J(j) { }
+    DifferentiableFunction(const To& /*unused*/, const From& /*unused*/, Function&& f, Jacobian&& j) noexcept :
+        F(std::move(f)),
+        J(std::move(j)) { }
 
-    template <typename ... AdditionalParameters>
+    DifferentiableFunction(const DifferentiableFunction& copy) noexcept = default;
+    DifferentiableFunction(DifferentiableFunction&& move) noexcept = default;
+
+    ~DifferentiableFunction() noexcept = default;
+
+    DifferentiableFunction& operator=(const DifferentiableFunction& copy) noexcept = default;
+    DifferentiableFunction& operator=(DifferentiableFunction&& move) noexcept = default;
+
+    template <typename... AdditionalParameters>
     Output operator()(const Input& input, const AdditionalParameters&... augmented_state) const noexcept {
         return F(input, augmented_state...);
     }
 
-    template <typename ... AdditionalParameters>
+    template <typename... AdditionalParameters>
     JacobianOutput jacobian(const Input& input, const AdditionalParameters&... augmented_state) const noexcept {
         return J(input, augmented_state...);
     }
 
-    template <typename ... AdditionalParameters>
-    Mean<To, Scalar> operator()(const Mean<From, Scalar>& input, const AdditionalParameters&... augmented_state) const noexcept {
+    template <typename... AdditionalParameters>
+    Mean<To, Scalar> operator()(const Mean<From, Scalar>& input,
+                                const AdditionalParameters&... augmented_state) const noexcept {
         return Mean<To, Scalar>(F(input.mean, augmented_state...));
     }
 
-    template <typename ... AdditionalParameters>
-    MeanAndCovariance<To, Scalar> operator()(const MeanAndCovariance<From, Scalar>& input, const AdditionalParameters&... augmented_state) const noexcept {
+    template <typename... AdditionalParameters>
+    MeanAndCovariance<To, Scalar> operator()(const MeanAndCovariance<From, Scalar>& input,
+                                             const AdditionalParameters&... augmented_state) const noexcept {
         const auto jacobian_evaluated = J(input.mean, augmented_state...);
         return MeanAndCovariance<To, Scalar>(F(input.mean, augmented_state...),
                                              jacobian_evaluated * input.covariance * jacobian_evaluated.transpose());
     }
 
-    template <int N_Points, typename ... AdditionalParameters>
-    WeightedSamples<To, Scalar, N_Points> operator()(const WeightedSamples<From, Scalar, N_Points>& input, const AdditionalParameters&... augmented_state) const noexcept {
+    template <int N_Points, typename... AdditionalParameters>
+    WeightedSamples<To, Scalar, N_Points> operator()(const WeightedSamples<From, Scalar, N_Points>& input,
+                                                     const AdditionalParameters&... augmented_state) const noexcept {
         typename WeightedSamples<To, Scalar, N_Points>::SamplesMatrix transformed_samples;
         for (size_t i = 0; i < N_Points; i++) {
             transformed_samples.col(i) = F(input.samples.col(i), augmented_state...);
@@ -80,4 +97,4 @@ struct DifferentiableFunction {
     Jacobian J;
 };
 
-}
+} // namespace vague

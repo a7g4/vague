@@ -1,18 +1,19 @@
 #include "vague/arbitrary_function.hpp"
 #include "vague/differentiable_function.hpp"
+#include "vague/estimate.hpp"
 #include "vague/linear_function.hpp"
 #include "vague/state_spaces.hpp"
-#include "vague/estimate.hpp"
+
 #include <iostream>
 
 struct From {
     enum Elements { E1, N };
-    constexpr static std::array<size_t, 0> Angles {};
+    constexpr static std::array<size_t, 0> ANGLES {};
 };
 
 struct To {
-    enum Elements { E1, E2 , N};
-    constexpr static std::array<size_t, 0> Angles {};
+    enum Elements { E1, E2, N };
+    constexpr static std::array<size_t, 0> ANGLES {};
 };
 
 int main() {
@@ -22,13 +23,16 @@ int main() {
     vague::LinearFunction<To, From, double> f(Eigen::Matrix<double, 2, 1> {{1}, {2}});
 
     vague::DifferentiableFunction<To, From, std::function<Output(const Input&)>, std::function<Output(const Input&)>> df(
-        [](const Input& i) -> Output { return Output {i[0], i[0] * i[0]}; },
-        [](const Input& i) -> Output { return Output {1, 2 * i[0] }; }
-    );
+        [](const Input& i) -> Output {
+            return Output {i[0], i[0] * i[0]};
+        },
+        [](const Input& i) -> Output {
+            return Output {1, 2 * i[0]};
+        });
 
-    vague::ArbitraryFunction<To, From, std::function<Output(const Input&)>> af(
-        [](const Input& i) -> Output { return Output {i[0], i[0] * i[0]}; }
-    );
+    vague::ArbitraryFunction<To, From, std::function<Output(const Input&)>> af([](const Input& i) -> Output {
+        return Output {i[0], i[0] * i[0]};
+    });
 
     std::cout << "Raw Eigen\n";
     Input i {1.5};

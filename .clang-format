@@ -1,4 +1,4 @@
-AccessModifierOffset: 2
+AccessModifierOffset: -4
 #AddSpaceInEmptyInlineFunction: true
 AlignAfterOpenBracket: Align
 # AlignAfterOpenBracket: BlockIndent
@@ -29,11 +29,11 @@ IndentWidth: 4
 IndentWrappedFunctionNames: false
 LambdaBodyIndentation: Signature
 NamespaceIndentation: None
-# PackConstructorInitializers: CurrentLine
-PenaltyExcessCharacter: 1
-PenaltyReturnTypeOnItsOwnLine: 10
+PackConstructorInitializers: CurrentLine
+PenaltyExcessCharacter: 5
+PenaltyReturnTypeOnItsOwnLine: 100
 PointerAlignment: Left
-#QualifierAlignment: Left
+QualifierAlignment: Left
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false

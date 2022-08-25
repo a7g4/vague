@@ -1,24 +1,23 @@
 #include "catch.hpp"
-#include "vague/state_spaces.hpp"
-#include "vague/estimate.hpp"
-#include <iostream>
-
-
 #include "vague/arbitrary_function.hpp"
 #include "vague/differentiable_function.hpp"
+#include "vague/estimate.hpp"
 #include "vague/linear_function.hpp"
+#include "vague/state_spaces.hpp"
+
+#include <iostream>
 
 struct From {
     enum Elements { E1, N };
-    constexpr static std::array<size_t, 0> Angles {};
+    constexpr static std::array<size_t, 0> ANGLES {};
 };
 
 struct To {
     enum Elements { E1, E2, N };
-    constexpr static std::array<size_t, 0> Angles {};
+    constexpr static std::array<size_t, 0> ANGLES {};
 };
 
-TEST_CASE( "Test dumping ground", "[sample]" ) {
+TEST_CASE("Test dumping ground", "[sample]") {
 
     using Input = Eigen::Matrix<double, 1, 1>;
     using Output = Eigen::Matrix<double, 2, 1>;
@@ -26,19 +25,18 @@ TEST_CASE( "Test dumping ground", "[sample]" ) {
     vague::LinearFunction<To, From, double> f(Eigen::Matrix<double, 2, 1> {{1}, {2}});
 
     vague::DifferentiableFunction<To, From, std::function<Output(const Input&)>, std::function<Output(const Input&)>> df(
-        [](const Input& i) -> Output { return Output(i[0], i[0] * i[0]); },
-        [](const Input& i) -> Output { return Output(1, 2 * i[0]); }
-    );
+        [](const Input& i) -> Output {
+            return {i[0], i[0] * i[0]};
+        },
+        [](const Input& i) -> Output {
+            return {1, 2 * i[0]};
+        });
 
-    vague::ArbitraryFunction<To, From, std::function<Output(const Input&)>> af(
-        [](const Input& i) -> Output { return Output(i[0], i[0] * i[0]); }
-    );
+    vague::ArbitraryFunction<To, From, std::function<Output(const Input&)>> af([](const Input& i) -> Output {
+        return {i[0], i[0] * i[0]};
+    });
 
-    auto af2 = vague::ArbitraryFunction(
-        To(),
-        From(),
-        [](const Input& i) -> Output { return Output (i[0], i[0] * i[0]); }
-    );
+    auto af2 = vague::ArbitraryFunction(To(), From(), [](const Input& i) -> Output { return {i[0], i[0] * i[0]}; });
 
     Input t {1.5};
 
@@ -61,9 +59,11 @@ TEST_CASE( "Test dumping ground", "[sample]" ) {
     std::cout << "sizeof(CartesianPosYaw2D) = " << sizeof(ss) << "\n\n";
 
     vague::WeightedSamples<vague::state_spaces::CartesianPos2D, double, 6> samples(
-        Eigen::Matrix<double, 2, 6> {{1, 2, 3, 1, 2, 3}, {2, 2, 2, 3, 3, 3}},
-        Eigen::Matrix<double, 6, 1>::Ones() / 6.
-    );
+        Eigen::Matrix<double, 2, 6> {
+            {1, 2, 3, 1, 2, 3},
+            {2, 2, 2, 3, 3, 3}
+        },
+        Eigen::Matrix<double, 6, 1>::Ones() / 6.);
 
     std::cout << samples[1] << std::endl;
 
@@ -71,8 +71,12 @@ TEST_CASE( "Test dumping ground", "[sample]" ) {
     std::cout << "covariance = \n" << samples.statistics().covariance << "\n\n" << std::endl;
 
     vague::Mean<vague::state_spaces::CartesianPos2D, double> mean(Eigen::Matrix<double, 2, 1> {{1}, {2}});
-    vague::MeanAndCovariance<vague::state_spaces::CartesianPos2D, double> mac(Eigen::Matrix<double, 2, 1> {{1}, {2}},
-                                                                               Eigen::Matrix<double, 2, 2> {{1, 2}, {2, 3}});
+    vague::MeanAndCovariance<vague::state_spaces::CartesianPos2D, double> mac(
+        Eigen::Matrix<double, 2, 1> {
+            {1},
+            {2}
+    },
+        Eigen::Matrix<double, 2, 2> {{1, 2}, {2, 3}});
 
     std::cout << mac.covariance << std::endl;
     std::cout << mac.mean << std::endl;
@@ -80,5 +84,5 @@ TEST_CASE( "Test dumping ground", "[sample]" ) {
     std::cout << "sizeof(From) = " << sizeof(From) << std::endl;
     std::cout << "sizeof(Box2D) = " << sizeof(vague::state_spaces::Box2D) << std::endl;
 
-    REQUIRE( 1 == 1 );
+    REQUIRE(1 == 1);
 }

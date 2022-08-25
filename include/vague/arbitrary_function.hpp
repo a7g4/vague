@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Eigen/Core>
-#include "vague/utility.hpp"
-#include "vague/state_spaces.hpp"
+#include "Eigen/Core"
 #include "vague/estimate.hpp"
+#include "vague/utility.hpp"
+
 #include <utility>
 
 namespace vague {
@@ -15,12 +15,12 @@ struct ArbitraryFunction {
     using From = FromT;
     using Function = FunctionT;
 
-    constexpr static size_t DIM_RANGE = To::N;
-    constexpr static size_t DIM_DOMAIN = From::N;
+    constexpr static size_t DimRange = To::N;
+    constexpr static size_t DimDomain = From::N;
 
     using Scalar = typename utility::FunctionType<Function>::Output::Scalar;
-    using Input = Eigen::Matrix<Scalar, DIM_DOMAIN, 1>;
-    using Output = Eigen::Matrix<Scalar, DIM_RANGE, 1>;
+    using Input = Eigen::Matrix<Scalar, DimDomain, 1>;
+    using Output = Eigen::Matrix<Scalar, DimRange, 1>;
 
     static_assert(std::is_same<Input, typename utility::FunctionType<Function>::template Input<0>>::value,
                   "First input to the function must be an Eigen vector representing the 'From' space");
@@ -35,27 +35,31 @@ struct ArbitraryFunction {
 
     ArbitraryFunction(const Function& f) noexcept : F(f) { }
     ArbitraryFunction(Function&& f) noexcept : F(std::move(f)) { }
-    
+
     ArbitraryFunction(const ArbitraryFunction& copy) noexcept = default;
     ArbitraryFunction(ArbitraryFunction&& move) noexcept = default;
 
+    ~ArbitraryFunction() noexcept = default;
+
     // Constructors that use the state spaces as "tags" for tagged dispatch
     // TODO: Can these be removed with some clever CTAD?
-    ArbitraryFunction(const To&, const From&, const Function& f) noexcept : F(f) { }
-    ArbitraryFunction(const To&, const From&, Function&& f) noexcept : F(std::move(f)) { }
+    ArbitraryFunction(const To& /*unused*/, const From& /*unused*/, const Function& f) noexcept : F(f) { }
+    ArbitraryFunction(const To& /*unused*/, const From& /*unused*/, Function&& f) noexcept : F(std::move(f)) { }
 
-    template <typename ... AdditionalParameters>
+    template <typename... AdditionalParameters>
     Output operator()(const Input& from, const AdditionalParameters&... additional_parameters) const noexcept {
         return F(from, additional_parameters...);
     }
 
-    template <typename ... AdditionalParameters>
-    Mean<To, Scalar> operator()(const Mean<From, Scalar>& from, const AdditionalParameters&... additional_parameters) const noexcept {
+    template <typename... AdditionalParameters>
+    Mean<To, Scalar> operator()(const Mean<From, Scalar>& from,
+                                const AdditionalParameters&... additional_parameters) const noexcept {
         return F(from.mean, additional_parameters...);
     }
 
-    template <int N_Points, typename ... AdditionalParameters>
-    WeightedSamples<To, Scalar, N_Points> operator()(const WeightedSamples<From, Scalar, N_Points>& input, const AdditionalParameters&... additional_parameters) const noexcept {
+    template <int N_Points, typename... AdditionalParameters>
+    WeightedSamples<To, Scalar, N_Points> operator()(const WeightedSamples<From, Scalar, N_Points>& input,
+                                                     const AdditionalParameters&... additional_parameters) const noexcept {
         typename WeightedSamples<To, Scalar, N_Points>::SamplesMatrix transformed_points;
         for (size_t i = 0; i < N_Points; i++) {
             transformed_points.col(i) = F(input.samples.col(i), additional_parameters...);
@@ -63,7 +67,10 @@ struct ArbitraryFunction {
         return WeightedSamples<To, Scalar, N_Points>(std::move(transformed_points), input.weights);
     }
 
+    ArbitraryFunction& operator=(const ArbitraryFunction& other) noexcept = default;
+    ArbitraryFunction& operator=(ArbitraryFunction&& other) noexcept = default;
+
     Function F;
 };
 
-}
+} // namespace vague
