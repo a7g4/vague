@@ -33,7 +33,7 @@ private:
     static std::false_type test(...);
 
 public:
-    static constexpr bool value = decltype(test<T>(0))::value; // NOLINT
+    static constexpr bool value = decltype(test<T>(0))::value; // NOLINT(readability-identifier-naming)
 };
 
 } // namespace vague::utility

@@ -9,8 +9,8 @@ constexpr double PI = 3.141592653589793238462643383279;
 constexpr double EPSILON = 1e-10;
 
 struct SixDofWithWeirdOrder {
-    enum Elements { X, Yaw, Y, Pitch, Z, Roll, N };
-    constexpr static std::array<size_t, 3> ANGLES {Roll, Yaw, Pitch};
+    enum Elements { X, YAW, Y, PITCH, Z, ROLL, N };
+    constexpr static std::array<size_t, 3> ANGLES {ROLL, YAW, PITCH};
 };
 } // namespace
 

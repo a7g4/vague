@@ -62,7 +62,7 @@ TEST_CASE("Test dumping ground", "[sample]") {
         Eigen::Matrix<double, 2, 6> {
             {1, 2, 3, 1, 2, 3},
             {2, 2, 2, 3, 3, 3}
-        },
+    },
         Eigen::Matrix<double, 6, 1>::Ones() / 6.);
 
     std::cout << samples[1] << std::endl;

@@ -55,9 +55,5 @@ int main() {
     std::cout << df(mac).mean.transpose() << std::endl;
     std::cout << af(m).mean.transpose() << std::endl;
 
-    // filter f<pos_vel_2d>
-    // predicted = f.predict<r_az_rr>(radar x, y, yaw);
-    // f.update(measurement, predicted);
-
     return 0;
 }

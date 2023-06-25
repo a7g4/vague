@@ -60,35 +60,35 @@ struct DifferentiableFunction {
     DifferentiableFunction& operator=(DifferentiableFunction&& move) noexcept = default;
 
     template <typename... AdditionalParameters>
-    Output operator()(const Input& input, const AdditionalParameters&... augmented_state) const noexcept {
-        return F(input, augmented_state...);
+    Output operator()(const Input& input, const AdditionalParameters&... additional_parameters) const noexcept {
+        return F(input, additional_parameters...);
     }
 
     template <typename... AdditionalParameters>
-    JacobianOutput jacobian(const Input& input, const AdditionalParameters&... augmented_state) const noexcept {
-        return J(input, augmented_state...);
+    JacobianOutput jacobian(const Input& input, const AdditionalParameters&... additional_parameters) const noexcept {
+        return J(input, additional_parameters...);
     }
 
     template <typename... AdditionalParameters>
     Mean<To, Scalar> operator()(const Mean<From, Scalar>& input,
-                                const AdditionalParameters&... augmented_state) const noexcept {
-        return Mean<To, Scalar>(F(input.mean, augmented_state...));
+                                const AdditionalParameters&... additional_parameters) const noexcept {
+        return Mean<To, Scalar>(F(input.mean, additional_parameters...));
     }
 
     template <typename... AdditionalParameters>
     MeanAndCovariance<To, Scalar> operator()(const MeanAndCovariance<From, Scalar>& input,
-                                             const AdditionalParameters&... augmented_state) const noexcept {
-        const auto jacobian_evaluated = J(input.mean, augmented_state...);
-        return MeanAndCovariance<To, Scalar>(F(input.mean, augmented_state...),
+                                             const AdditionalParameters&... additional_parameters) const noexcept {
+        const auto jacobian_evaluated = J(input.mean, additional_parameters...);
+        return MeanAndCovariance<To, Scalar>(F(input.mean, additional_parameters...),
                                              jacobian_evaluated * input.covariance * jacobian_evaluated.transpose());
     }
 
     template <int N_Points, typename... AdditionalParameters>
     WeightedSamples<To, Scalar, N_Points> operator()(const WeightedSamples<From, Scalar, N_Points>& input,
-                                                     const AdditionalParameters&... augmented_state) const noexcept {
+                                                     const AdditionalParameters&... additional_parameters) const noexcept {
         typename WeightedSamples<To, Scalar, N_Points>::SamplesMatrix transformed_samples;
         for (size_t i = 0; i < N_Points; i++) {
-            transformed_samples.col(i) = F(input.samples.col(i), augmented_state...);
+            transformed_samples.col(i) = F(input.samples.col(i), additional_parameters...);
         }
         return WeightedSamples<To, Scalar, N_Points>(std::move(transformed_samples), input.weights);
     }

@@ -10,9 +10,9 @@ TEST_CASE("Truncation projection, raw Eigen matrix", "[linear_function]") {
     using To = vague::state_spaces::CartesianPos2D;
     using From = vague::state_spaces::CartesianPosYaw2D;
 
-    Eigen::Matrix<double, 2, 3> F;
-    F << 1, 0, 0, 0, 1, 0;
-    vague::LinearFunction<To, From, double> f(F);
+    Eigen::Matrix<double, 2, 3> f_matrix;
+    f_matrix << 1, 0, 0, 0, 1, 0;
+    vague::LinearFunction<To, From, double> f(f_matrix);
 
     Eigen::Vector3d input(1, 2, 3);
     CHECK_MATRIX_NEARLY_EQUAL(Eigen::Vector2d(1, 2), f(input));
@@ -22,9 +22,9 @@ TEST_CASE("Truncation projection, Mean", "[linear_function]") {
     using To = vague::state_spaces::CartesianPos2D;
     using From = vague::state_spaces::CartesianPosYaw2D;
 
-    Eigen::Matrix<double, 2, 3> F;
-    F << 1, 0, 0, 0, 1, 0;
-    vague::LinearFunction<To, From, double> f(F);
+    Eigen::Matrix<double, 2, 3> f_matrix;
+    f_matrix << 1, 0, 0, 0, 1, 0;
+    vague::LinearFunction<To, From, double> f(f_matrix);
 
     vague::Mean<From, double> mean({1, 2, 3});
     CHECK_MATRIX_NEARLY_EQUAL(Eigen::Vector2d(1, 2), f(mean).mean);
@@ -34,9 +34,9 @@ TEST_CASE("Truncation projection, MeanAndCovariance", "[linear_function]") {
     using To = vague::state_spaces::CartesianPos2D;
     using From = vague::state_spaces::CartesianPosYaw2D;
 
-    Eigen::Matrix<double, 2, 3> F;
-    F << 1, 0, 0, 0, 1, 0;
-    vague::LinearFunction<To, From, double> f(F);
+    Eigen::Matrix<double, 2, 3> f_matrix;
+    f_matrix << 1, 0, 0, 0, 1, 0;
+    vague::LinearFunction<To, From, double> f(f_matrix);
 
     vague::MeanAndCovariance<From, double> mac(
         {
@@ -55,9 +55,9 @@ TEST_CASE("Truncation projection, WeightedSamples", "[linear_function]") {
     using To = vague::state_spaces::CartesianPos2D;
     using From = vague::state_spaces::CartesianPosYaw2D;
 
-    Eigen::Matrix<double, 2, 3> F;
-    F << 1, 0, 0, 0, 1, 0;
-    vague::LinearFunction<To, From, double> f(F);
+    Eigen::Matrix<double, 2, 3> f_matrix;
+    f_matrix << 1, 0, 0, 0, 1, 0;
+    vague::LinearFunction<To, From, double> f(f_matrix);
 
     vague::WeightedSamples<From, double, 3> sps(Eigen::Matrix3d({
                                                     {1, 2, 3},

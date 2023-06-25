@@ -3,6 +3,7 @@
 
 // TODO: Rewrite this all with macros so that it gets the right call site in the error messages
 template <typename M1, typename M2>
+// NOLINTNEXTLINE(readability-identifier-naming)
 void TEST_MATRIX_NEARLY_EQUAL(const M1& m1,
                               const M2& m2,
                               const typename M1::Scalar& epsilon,
@@ -15,6 +16,7 @@ void TEST_MATRIX_NEARLY_EQUAL(const M1& m1,
 }
 
 template <typename M1, typename M2>
+// NOLINTNEXTLINE(readability-identifier-naming)
 void CHECK_MATRIX_NEARLY_EQUAL(const M1& m1,
                                const M2& m2,
                                const typename M1::Scalar& epsilon = std::numeric_limits<typename M1::Scalar>::epsilon()) {

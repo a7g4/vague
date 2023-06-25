@@ -21,6 +21,20 @@ struct PredictedObservation : MeanAndCovariance<ObservationSpaceT, ScalarT> {
     Eigen::Matrix<Scalar, StateSpace::N, ObservationSpace::N> cross_covariance;
 };
 
+template <typename StateSpaceT, typename ScalarT>
+struct TimeDependentAdditiveProcessNoise {
+    using StateSpace = StateSpaceT;
+    using Scalar = ScalarT;
+    using Mean = Eigen::Matrix<Scalar, StateSpace::N, 1>;
+    using Covariance = Eigen::Matrix<Scalar, StateSpace::N, StateSpace::N>;
+    TimeDependentAdditiveProcessNoise(const Covariance& process_noise_per_second) :
+        process_noise_per_second(process_noise_per_second) { }
+    Covariance& operator()(const Scalar& dt, const Mean&, Covariance& covariance) const {
+        return (covariance += dt * process_noise_per_second);
+    }
+    Covariance process_noise_per_second;
+};
+
 template <typename StateSpaceT, typename ScalarT, typename TimePointT>
 class StateEstimator {
 public:
@@ -30,11 +44,10 @@ public:
 
     StateEstimator(const TimePoint& initial_time, const MeanAndCovariance<StateSpace, Scalar>& initial_estimate) noexcept :
         time(initial_time),
-        estimate(initial_estimate),
-        process_noise([initial_estimate](Scalar dt) { return dt * initial_estimate.covariance; }) { }
+        estimate(initial_estimate) { }
 
-    template <typename Dynamics>
-    void predict(const Dynamics& dynamics, TimePoint t) {
+    template <typename Dynamics, typename ProcessNoise>
+    void predict(const TimePoint& t, const Dynamics& dynamics, const ProcessNoise& process_noise) {
         const auto duration = (t - time);
 
         if (duration.count() == 0) { return; }
@@ -50,7 +63,11 @@ public:
             // Need to sample sigma points for non-linear & non-differentiable dynamics
             estimate = dynamics(sample(estimate, unscented_transform::CubatureSigmaPoints()), dt).statistics();
         }
-        estimate.covariance += process_noise(dt);
+        estimate.covariance =
+            process_noise(dt,
+                          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast) Add const; prevent mutation of mean
+                          const_cast<const Eigen::Vector<Scalar, StateSpace::N>&>(estimate.mean),
+                          estimate.covariance);
     }
 
     template <typename Observer, typename... AugmentedState>
@@ -89,8 +106,6 @@ public:
 
     TimePoint time;
     MeanAndCovariance<StateSpace, Scalar> estimate;
-    // TODO: This feels clunky, do something nicer for process noise
-    std::function<Eigen::Matrix<Scalar, StateSpace::N, StateSpace::N>(Scalar)> process_noise;
 };
 
 template <typename TimePoint, typename Estimate>
