@@ -37,16 +37,18 @@ struct WeightedSamples {
     using WeightsVector = Eigen::Matrix<Scalar, NSamples, 1>;
     using SamplesMatrix = Eigen::Matrix<Scalar, StateSpace::N, NSamples>;
 
-    WeightedSamples(const SamplesMatrix& samples, const WeightsVector& weights) noexcept :
-        samples(samples),
-        weights(weights) { }
-    WeightedSamples(SamplesMatrix&& samples) noexcept : samples(std::move(samples)), weights(std::move(weights)) { }
+    WeightedSamples(const SamplesMatrix& samples_, const WeightsVector& weights_) noexcept :
+        samples(samples_),
+        weights(weights_) { }
+    WeightedSamples(SamplesMatrix&& samples_, WeightsVector&& weights_) noexcept :
+        samples(std::move(samples_)),
+        weights(std::move(weights)) { }
 
-    WeightedSamples(const SamplesMatrix& samples, UniformWeightsTag /*unused*/) noexcept :
-        samples(samples),
+    WeightedSamples(const SamplesMatrix& samples_, UniformWeightsTag /*unused*/) noexcept :
+        samples(samples_),
         weights(WeightsVector::Constant(1. / NSamples)) { }
-    WeightedSamples(SamplesMatrix&& samples, UniformWeightsTag /*unused*/) noexcept :
-        samples(std::move(samples)),
+    WeightedSamples(SamplesMatrix&& samples_, UniformWeightsTag /*unused*/) noexcept :
+        samples(std::move(samples_)),
         weights(WeightsVector::Constant(1. / NSamples)) { }
 
     WeightedSamples(const WeightedSamples& copy) noexcept = default;
@@ -68,7 +70,6 @@ struct WeightedSamples {
         //  - First each angle to cartesian coordinates (ie. expand theta into cos(theta), sin(theta))
         //  - Average (element-wise) these "expanded" elements
         //  - Collapse back into polar coordinates
-        constexpr size_t AngleExpandedSize = StateSpace::N + StateSpace::ANGLES.size();
         using AngleExpandedWeightedSamples = Eigen::Matrix<Scalar, AngleExpandedSize, NSamples>;
 
         AngleExpandedWeightedSamples expanded_samples;
