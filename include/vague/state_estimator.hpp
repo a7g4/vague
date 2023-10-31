@@ -27,8 +27,8 @@ struct TimeDependentAdditiveProcessNoise {
     using Scalar = ScalarT;
     using Mean = Eigen::Matrix<Scalar, StateSpace::N, 1>;
     using Covariance = Eigen::Matrix<Scalar, StateSpace::N, StateSpace::N>;
-    TimeDependentAdditiveProcessNoise(const Covariance& process_noise_per_second) :
-        process_noise_per_second(process_noise_per_second) { }
+    TimeDependentAdditiveProcessNoise(const Covariance& process_noise_per_second_) :
+        process_noise_per_second(process_noise_per_second_) { }
     Covariance& operator()(const Scalar& dt, const Mean&, Covariance& covariance) const {
         return (covariance += dt * process_noise_per_second);
     }
