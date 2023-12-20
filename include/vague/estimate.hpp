@@ -19,8 +19,8 @@ struct MeanAndCovariance : Mean<StateSpaceT, ScalarT> {
     using Scalar = ScalarT;
     using Vector = Eigen::Matrix<Scalar, StateSpace::N, 1>;
     using Matrix = Eigen::Matrix<Scalar, StateSpace::N, StateSpace::N>;
-    MeanAndCovariance(const Vector& mean, const Matrix& covariance_) noexcept :
-        Mean<StateSpace, Scalar>(mean),
+    MeanAndCovariance(const Vector& mean_, const Matrix& covariance_) noexcept :
+        Mean<StateSpace, Scalar>(mean_),
         covariance(covariance_) { }
     Matrix covariance;
 };
