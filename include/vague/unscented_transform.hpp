@@ -22,8 +22,17 @@ WeightedSamples<StateSpace, Scalar, StateSpace::N * 2> sample(MeanAndCovariance<
     if (llt_solver.info() != Eigen::Success) {
         // TODO: Emit a warning somehow that LDLT was needed, this is a performance hit
         Eigen::LDLT<Eigen::Matrix<Scalar, StateSpace::N, StateSpace::N>> ldlt_solver(distribution.covariance);
+
+        if (ldlt_solver.info() != Eigen::Success) {
+            throw std::runtime_error("LLT and LDLT solvers failed on the covariance matrix");
+        }
+
         sqrt_sigma = ldlt_solver.matrixL();
-        sqrt_sigma = sqrt_sigma * ldlt_solver.vectorD().cwiseSqrt().asDiagonal();
+
+        // The cwiseMin(0) is to protect against cases where D has negative elements. That means the covariance wasn't
+        // actually positive semi-definite but this should mean that sqrt_sigma * sqrt_sigmaT is a close approximation
+        // of the input covariance.
+        sqrt_sigma = sqrt_sigma * ldlt_solver.vectorD().cwiseMax(0).cwiseSqrt().asDiagonal();
     } else {
         sqrt_sigma = llt_solver.matrixL();
     }
