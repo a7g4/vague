@@ -2,6 +2,8 @@
 
 #include "Eigen/Core"
 
+#include <cmath>
+
 namespace vague {
 
 template <typename StateSpaceT, typename ScalarT>
@@ -116,10 +118,17 @@ struct WeightedSamples {
             SamplesMatrix centered = samples.colwise() - mean;
             // Unwrap each angle - Note: This assumes deviations are meant to be within some small angle of the mean
             // TODO: Maybe make this behaviour a parameter or something?
+            // TODO: I tried various approaches to avoid the branch (std::copysign, muliply comparison result, etc.)
+            //       but none seemed consistently better on both x86_64 and armv8. Revisit this at some point?
             centered(StateSpace::ANGLES, Eigen::all) =
                 centered(StateSpace::ANGLES, Eigen::all).unaryExpr([](const Scalar& angle_diff) {
-                    static constexpr Scalar PI = 3.141592653589793238462643383279;
-                    return std::fmod(angle_diff, PI);
+                    Scalar diff_plus_pi = std::fmod(angle_diff + M_PI, 2*M_PI);
+                    // diff_plus_pi is now between -2PI and 2PI
+                    if (diff_plus_pi < 0) {
+                        diff_plus_pi += 2 * M_PI;
+                    }
+                    // diff_plus_pi is now between 0 and PI
+                    return diff_plus_pi - M_PI;
                 });
             return {mean, centered};
         }
