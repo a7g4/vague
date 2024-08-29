@@ -127,7 +127,7 @@ struct WeightedSamples {
                     if (diff_plus_pi < 0) {
                         diff_plus_pi += 2 * M_PI;
                     }
-                    // diff_plus_pi is now between 0 and PI
+                    // diff_plus_pi is now between 0 and 2PI
                     return diff_plus_pi - M_PI;
                 });
             return {mean, centered};
