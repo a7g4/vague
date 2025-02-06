@@ -16,7 +16,7 @@ struct JulierSigmaPoints {
 
 template <typename StateSpace, typename Scalar>
 WeightedSamples<StateSpace, Scalar, StateSpace::N * 2> sample(MeanAndCovariance<StateSpace, Scalar> distribution,
-                                                              unscented_transform::CubatureSigmaPoints /*unused*/) noexcept {
+                                                              unscented_transform::CubatureSigmaPoints /*unused*/) {
     Eigen::LLT<Eigen::Matrix<Scalar, StateSpace::N, StateSpace::N>> llt_solver(distribution.covariance);
     Eigen::Matrix<Scalar, StateSpace::N, StateSpace::N> sqrt_sigma;
     if (llt_solver.info() != Eigen::Success) {
